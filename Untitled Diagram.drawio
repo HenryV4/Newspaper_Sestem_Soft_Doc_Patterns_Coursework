@@ -1,0 +1,25 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36" version="29.6.0">
+  <diagram name="Page-1" id="m7tYMMq2rOpZ6kMDBy19">
+    <mxGraphModel dx="689" dy="368" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="4681" pageHeight="3300" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="mmbHHnM36UBC1NBjywPw-1" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=90;height=40;" value="News" vertex="1">
+          <mxGeometry height="600" width="690" x="540" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="mmbHHnM36UBC1NBjywPw-2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" value="GUEST" vertex="1">
+          <mxGeometry height="60" width="30" x="380" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="mmbHHnM36UBC1NBjywPw-3" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" value="CUSTOMER" vertex="1">
+          <mxGeometry height="60" width="30" x="410" y="510" as="geometry" />
+        </mxCell>
+        <mxCell id="mmbHHnM36UBC1NBjywPw-7" edge="1" parent="1" source="mmbHHnM36UBC1NBjywPw-3" style="endArrow=block;endSize=16;endFill=0;html=1;rounded=0;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" target="mmbHHnM36UBC1NBjywPw-2" value="Extends">
+          <mxGeometry relative="1" width="160" as="geometry">
+            <mxPoint x="900" y="560" as="sourcePoint" />
+            <mxPoint x="425" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
