@@ -5,7 +5,7 @@
   &nbsp;&nbsp;&nbsp;
   <img src="https://img.shields.io/badge/Варіант-10-orange?style=for-the-badge" alt="Variant 10" />
   &nbsp;&nbsp;&nbsp;
-  <img src="https://img.shields.io/badge/НУ%20«Львівська%20політехніка»-1844-darkred?style=for-the-badge" alt="NULP" />
+  <img src="https://img.shields.io/badge/НУ%20«Львівська%20політехніка»-ІКТА-darkred?style=for-the-badge" alt="NULP" />
 </p>
 
 ---
