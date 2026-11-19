@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net">
   <diagram id="C5RBs43oDa-KdzZeNtuy" name="Page-1">
-    <mxGraphModel dx="5135" dy="2758" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="10" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="4777" dy="2565" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="10" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="WIyWlLk6GJQsqaUBKTNV-0" />
         <mxCell id="WIyWlLk6GJQsqaUBKTNV-1" parent="WIyWlLk6GJQsqaUBKTNV-0" />
@@ -464,17 +464,17 @@
         <mxCell id="EI3C-mqFs2tp5t_gBglv-191" parent="WIyWlLk6GJQsqaUBKTNV-1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=230;height=50;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=4;fontSize=15;" value="&lt;font&gt;Builder GOF Pattern&lt;/font&gt;" vertex="1">
           <mxGeometry height="630" width="1050" x="4050" y="2897" as="geometry" />
         </mxCell>
-        <mxCell id="EI3C-mqFs2tp5t_gBglv-197" parent="WIyWlLk6GJQsqaUBKTNV-1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fontSize=15;" value="&lt;div&gt;&amp;lt;&amp;lt;interface&amp;gt;&amp;gt;&lt;/div&gt;&lt;div&gt;CategoryComponent&lt;/div&gt;" vertex="1">
-          <mxGeometry height="118" width="315" x="3645" y="3300" as="geometry" />
+        <mxCell id="EI3C-mqFs2tp5t_gBglv-197" parent="WIyWlLk6GJQsqaUBKTNV-1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=50;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fontSize=15;" value="&lt;div&gt;&amp;lt;&amp;lt;interface&amp;gt;&amp;gt;&lt;/div&gt;&lt;div&gt;CategoryComponent&lt;/div&gt;" vertex="1">
+          <mxGeometry height="128" width="315" x="3645" y="3300" as="geometry" />
         </mxCell>
         <mxCell id="EI3C-mqFs2tp5t_gBglv-202" parent="EI3C-mqFs2tp5t_gBglv-197" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=15;" value="+ getArticles(): List&amp;lt;Article&amp;gt;" vertex="1">
-          <mxGeometry height="26" width="315" y="40" as="geometry" />
+          <mxGeometry height="26" width="315" y="50" as="geometry" />
         </mxCell>
         <mxCell id="EI3C-mqFs2tp5t_gBglv-204" parent="EI3C-mqFs2tp5t_gBglv-197" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=15;" value="+ add(c: CategoryComponent): Void" vertex="1">
-          <mxGeometry height="26" width="315" y="66" as="geometry" />
+          <mxGeometry height="26" width="315" y="76" as="geometry" />
         </mxCell>
         <mxCell id="EI3C-mqFs2tp5t_gBglv-203" parent="EI3C-mqFs2tp5t_gBglv-197" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=15;" value="+ remove(c: CategoryComponent): Void" vertex="1">
-          <mxGeometry height="26" width="315" y="92" as="geometry" />
+          <mxGeometry height="26" width="315" y="102" as="geometry" />
         </mxCell>
         <mxCell id="EI3C-mqFs2tp5t_gBglv-205" parent="WIyWlLk6GJQsqaUBKTNV-1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fontSize=15;" value="CategoryLeaf" vertex="1">
           <mxGeometry height="158" width="300" x="3620" y="3590" as="geometry">
