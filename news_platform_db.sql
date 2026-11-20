@@ -1,5 +1,33 @@
+-- ============================================================================
+-- NEWS PLATFORM DATABASE: FULL SCHEMA (DDL) & SEED DATA (DML)
+-- Compatible with SQLite (DBeaver)
+-- ============================================================================
+
+PRAGMA foreign_keys = OFF;
+
+DROP TABLE IF EXISTS advertisements;
+DROP TABLE IF EXISTS notifications;
+DROP TABLE IF EXISTS author_subscriptions;
+DROP TABLE IF EXISTS comments;
+DROP TABLE IF EXISTS article_interactions;
+DROP TABLE IF EXISTS article_media;
+DROP TABLE IF EXISTS article_tags;
+DROP TABLE IF EXISTS tags;
+DROP TABLE IF EXISTS articles;
+DROP TABLE IF EXISTS subscriptions;
+DROP TABLE IF EXISTS subscription_plans;
+DROP TABLE IF EXISTS user_preferred_categories;
+DROP TABLE IF EXISTS categories;
+DROP TABLE IF EXISTS user_profiles;
+DROP TABLE IF EXISTS users;
+
 PRAGMA foreign_keys = ON;
 
+-- ============================================================================
+-- PART 1: TABLE DEFINITIONS (DDL)
+-- ============================================================================
+
+-- 1. Users & Roles (RBAC)
 CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     email VARCHAR(255) NOT NULL UNIQUE,
@@ -9,6 +37,7 @@ CREATE TABLE users (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 2. User Profiles (1:1 relationship with users)
 CREATE TABLE user_profiles (
     user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
     full_name VARCHAR(150) NOT NULL,
@@ -16,6 +45,7 @@ CREATE TABLE user_profiles (
     avatar_url VARCHAR(500)
 );
 
+-- 3. Categories Hierarchy (Composite Pattern: self-referencing FK)
 CREATE TABLE categories (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name VARCHAR(100) NOT NULL,
@@ -23,12 +53,14 @@ CREATE TABLE categories (
     parent_id INTEGER REFERENCES categories(id) ON DELETE SET NULL
 );
 
+-- 4. User Preferred Categories (M:N for PersonalizedFeedStrategy)
 CREATE TABLE user_preferred_categories (
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     category_id INTEGER NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
     PRIMARY KEY (user_id, category_id)
 );
 
+-- 5. Subscription Plans
 CREATE TABLE subscription_plans (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name VARCHAR(100) NOT NULL,
@@ -37,6 +69,7 @@ CREATE TABLE subscription_plans (
     is_active BOOLEAN NOT NULL DEFAULT 1
 );
 
+-- 6. User Subscriptions (State Pattern: ACTIVE, EXPIRED, CANCELLED)
 CREATE TABLE subscriptions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -46,6 +79,7 @@ CREATE TABLE subscriptions (
     end_date DATETIME NOT NULL
 );
 
+-- 7. Articles (Builder Pattern)
 CREATE TABLE articles (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     author_id INTEGER NOT NULL REFERENCES users(id),
@@ -60,6 +94,7 @@ CREATE TABLE articles (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 8. Tags & Article Tags (M:N)
 CREATE TABLE tags (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name VARCHAR(50) NOT NULL UNIQUE
@@ -71,6 +106,7 @@ CREATE TABLE article_tags (
     PRIMARY KEY (article_id, tag_id)
 );
 
+-- 9. Article Media Attachments (1:N with articles)
 CREATE TABLE article_media (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     article_id INTEGER NOT NULL REFERENCES articles(id) ON DELETE CASCADE,
@@ -79,6 +115,7 @@ CREATE TABLE article_media (
     caption VARCHAR(255)
 );
 
+-- 10. Article Interactions (Likes, Bookmarks, Views)
 CREATE TABLE article_interactions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -89,6 +126,7 @@ CREATE TABLE article_interactions (
     UNIQUE (user_id, article_id)
 );
 
+-- 11. Comments
 CREATE TABLE comments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     article_id INTEGER NOT NULL REFERENCES articles(id) ON DELETE CASCADE,
@@ -97,6 +135,7 @@ CREATE TABLE comments (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 12. Author Subscriptions (Observer Pattern: Reader -> Journalist)
 CREATE TABLE author_subscriptions (
     subscriber_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     author_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -104,6 +143,7 @@ CREATE TABLE author_subscriptions (
     PRIMARY KEY (subscriber_id, author_id)
 );
 
+-- 13. Notifications (Factory Method Pattern: EMAIL / PUSH)
 CREATE TABLE notifications (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -114,25 +154,27 @@ CREATE TABLE notifications (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- Optional cleanup if you already inserted sample rows earlier:
--- DELETE FROM notifications;
--- DELETE FROM author_subscriptions;
--- DELETE FROM comments;
--- DELETE FROM article_interactions;
--- DELETE FROM article_media;
--- DELETE FROM article_tags;
--- DELETE FROM tags;
--- DELETE FROM articles;
--- DELETE FROM subscriptions;
--- DELETE FROM subscription_plans;
--- DELETE FROM user_preferred_categories;
--- DELETE FROM categories;
--- DELETE FROM user_profiles;
--- DELETE FROM users;
+-- 14. Advertisements (Shown to Guests and Free-Tier Readers)
+CREATE TABLE advertisements (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    advertiser_name VARCHAR(120) NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    banner_url VARCHAR(500) NOT NULL,
+    target_url VARCHAR(500) NOT NULL,
+    placement VARCHAR(30) NOT NULL CHECK (placement IN ('TOP_BANNER', 'SIDEBAR', 'IN_ARTICLE')),
+    category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
+    impressions_count INTEGER NOT NULL DEFAULT 0,
+    clicks_count INTEGER NOT NULL DEFAULT 0,
+    is_active BOOLEAN NOT NULL DEFAULT 1,
+    start_date DATETIME NOT NULL,
+    end_date DATETIME NOT NULL
+);
 
--- ==========================================
+-- ============================================================================
+-- PART 2: SEED DATA (DML)
+-- ============================================================================
+
 -- 1. USERS (1-2: Admins, 3-6: Journalists, 7-12: Readers)
--- ==========================================
 INSERT INTO users (email, password_hash, role, is_banned, created_at) VALUES
 ('alex.mercer@newsplatform.com', '$2a$10$hash_admin_01', 'ADMIN', FALSE, '2026-01-10 08:00:00'),
 ('claire.vance@newsplatform.com', '$2a$10$hash_admin_02', 'ADMIN', FALSE, '2026-01-12 09:15:00'),
@@ -147,26 +189,22 @@ INSERT INTO users (email, password_hash, role, is_banned, created_at) VALUES
 ('ethan.brown@gmail.com', '$2a$10$hash_read_05', 'READER', FALSE, '2026-06-22 13:50:00'),
 ('spam.bot99@mail.com', '$2a$10$hash_read_06', 'READER', TRUE, '2026-07-08 03:12:00');
 
--- ==========================================
--- 2. USER PROFILES (1:1 with users)
--- ==========================================
+-- 2. USER PROFILES
 INSERT INTO user_profiles (user_id, full_name, bio, avatar_url) VALUES
-(1, 'Alex Mercer', 'Chief Platform Administrator & Editorial Lead', 'https://cdn.newsplatform.com/avatars/alex.png'),
-(2, 'Claire Vance', 'Content Moderator & Community Operations Manager', 'https://cdn.newsplatform.com/avatars/claire.png'),
-(3, 'David Chen', 'Senior Technology Correspondent covering AI, LLMs, and distributed systems.', 'https://cdn.newsplatform.com/avatars/david.png'),
-(4, 'Sarah Jenkins', 'Cybersecurity Analyst and Investigative Tech Journalist.', 'https://cdn.newsplatform.com/avatars/sarah.png'),
-(5, 'Marcus Thorne', 'Financial Markets Editor & Venture Capital Columnist.', 'https://cdn.newsplatform.com/avatars/marcus.png'),
-(6, 'Elena Rostova', 'Sports & Space Exploration Reporter.', 'https://cdn.newsplatform.com/avatars/elena.png'),
-(7, 'Liam O''Connor', 'Software architect passionate about AI and cloud infrastructure.', 'https://cdn.newsplatform.com/avatars/liam.png'),
-(8, 'Sophia Martinez', 'Fintech product manager and avid macroeconomics reader.', 'https://cdn.newsplatform.com/avatars/sophia.png'),
+(1, 'Alex Mercer', 'Chief Platform Administrator & Editorial Lead', 'https://ui-avatars.com/api/?name=Alex+Mercer&background=0D8ABC&color=fff&size=256'),
+(2, 'Claire Vance', 'Content Moderator & Community Operations Manager', 'https://ui-avatars.com/api/?name=Claire+Vance&background=6366F1&color=fff&size=256'),
+(3, 'David Chen', 'Senior Technology Correspondent covering AI, computer vision, and rendering pipelines.', 'https://ui-avatars.com/api/?name=David+Chen&background=10B981&color=fff&size=256'),
+(4, 'Sarah Jenkins', 'Cybersecurity Analyst and Investigative Tech Journalist.', 'https://ui-avatars.com/api/?name=Sarah+Jenkins&background=F59E0B&color=fff&size=256'),
+(5, 'Marcus Thorne', 'Financial Markets Editor & Venture Capital Columnist.', 'https://ui-avatars.com/api/?name=Marcus+Thorne&background=EF4444&color=fff&size=256'),
+(6, 'Elena Rostova', 'Sports & Space Exploration Reporter.', 'https://ui-avatars.com/api/?name=Elena+Rostova&background=8B5CF6&color=fff&size=256'),
+(7, 'Liam O''Connor', 'Software architect passionate about AI and cloud infrastructure.', 'https://ui-avatars.com/api/?name=Liam+OConnor&background=14B8A6&color=fff&size=256'),
+(8, 'Sophia Martinez', 'Fintech product manager and avid macroeconomics reader.', 'https://ui-avatars.com/api/?name=Sophia+Martinez&background=EC4899&color=fff&size=256'),
 (9, 'Noah Williams', 'Formula 1 enthusiast and weekend football fan.', NULL),
-(10, 'Emma Davis', 'Astrophysics student following deep-space missions.', 'https://cdn.newsplatform.com/avatars/emma.png'),
+(10, 'Emma Davis', 'Astrophysics student following deep-space missions.', 'https://ui-avatars.com/api/?name=Emma+Davis&background=3B82F6&color=fff&size=256'),
 (11, 'Ethan Brown', 'Casual daily news reader.', NULL),
 (12, 'Blocked User', 'Account suspended due to repeated spam violations.', NULL);
 
--- ==========================================
--- 3. CATEGORIES (Composite Hierarchy: 1-4 Root, 5-12 Subcategories)
--- ==========================================
+-- 3. CATEGORIES (1-4 Root Groups, 5-12 Subcategories)
 INSERT INTO categories (name, slug, parent_id) VALUES
 ('Technology', 'technology', NULL),
 ('Business & Economy', 'business-economy', NULL),
@@ -181,9 +219,7 @@ INSERT INTO categories (name, slug, parent_id) VALUES
 ('Formula 1', 'formula-1', 3),
 ('Space Exploration', 'space-exploration', 4);
 
--- ==========================================
--- 4. USER PREFERRED CATEGORIES (M:N for PersonalizedFeedStrategy)
--- ==========================================
+-- 4. USER PREFERRED CATEGORIES
 INSERT INTO user_preferred_categories (user_id, category_id) VALUES
 (7, 1), (7, 5), (7, 7),
 (8, 2), (8, 8), (8, 9),
@@ -191,18 +227,14 @@ INSERT INTO user_preferred_categories (user_id, category_id) VALUES
 (10, 4), (10, 12), (10, 5),
 (11, 1), (11, 3);
 
--- ==========================================
 -- 5. SUBSCRIPTION PLANS
--- ==========================================
 INSERT INTO subscription_plans (name, price, duration_days, is_active) VALUES
 ('Free Tier', 0.00, 3650, TRUE),
 ('Premium Monthly', 9.99, 30, TRUE),
 ('Premium Annual', 89.99, 365, TRUE),
 ('Legacy Student Plan', 4.99, 30, FALSE);
 
--- ==========================================
--- 6. SUBSCRIPTIONS (State Pattern: ACTIVE, EXPIRED, CANCELLED)
--- ==========================================
+-- 6. SUBSCRIPTIONS
 INSERT INTO subscriptions (user_id, plan_id, status, start_date, end_date) VALUES
 (7, 2, 'ACTIVE', '2026-11-01 10:00:00', '2026-12-01 10:00:00'),
 (8, 3, 'ACTIVE', '2026-06-15 14:30:00', '2027-06-15 14:30:00'),
@@ -210,13 +242,11 @@ INSERT INTO subscriptions (user_id, plan_id, status, start_date, end_date) VALUE
 (10, 2, 'CANCELLED', '2026-10-20 12:00:00', '2026-11-20 12:00:00'),
 (11, 1, 'ACTIVE', '2026-06-22 13:50:00', '2036-06-22 13:50:00');
 
--- ==========================================
--- 7. ARTICLES (1-12 PUBLISHED, 13-14 DRAFT; Mix of Public & Premium)
--- ==========================================
+-- 7. ARTICLES (1-12 PUBLISHED, 13-14 DRAFT; Articles 1 & 12 tailored to video demos)
 INSERT INTO articles (author_id, category_id, title, slug, summary, content, is_premium, status, published_at, created_at) VALUES
-(3, 5, 'How Edge-Deployed Small Language Models Are Reshaping Enterprise Apps', 'edge-slm-enterprise-2026',
- 'Compact quantized models running locally on client hardware are cutting cloud inference costs by up to 70%.',
- 'Over the past year, enterprises have shifted away from routing every prompt to massive cloud endpoints. By combining 4-bit quantization with domain-specific fine-tuning, engineering teams now run sub-8B parameter models directly on edge nodes with sub-50ms latency...',
+(3, 5, 'AI-Driven Botanical Time-Lapse Analysis: How Vision Models Track Plant Growth', 'ai-botanical-timelapse-vision-2026',
+ 'Deep learning computer vision pipelines are detecting micro-changes in plant blooming cycles to optimize vertical farming yields.',
+ 'Modern agricultural technology relies on high-definition time-lapse imaging paired with vision-transformer models. By analyzing frame-by-frame petal expansion and cellular growth rates in real time, automated greenhouses adjust light spectrums and nutrient delivery without manual intervention...',
  FALSE, 'PUBLISHED', '2026-11-10 09:00:00', '2026-11-09 18:20:00'),
 
 (4, 6, 'Inside the 2026 Zero-Day Supply Chain Attacks: A Forensic Breakdown', 'zero-day-supply-chain-forensics',
@@ -269,9 +299,9 @@ INSERT INTO articles (author_id, category_id, title, slug, summary, content, is_
  'Lead times for high-bandwidth memory and custom ASICs have dropped to 14 weeks, relieving pressure on cloud hardware providers and automotive manufacturers alike...',
  FALSE, 'PUBLISHED', '2026-11-18 16:20:00', '2026-11-18 12:10:00'),
 
-(6, 10, 'Inside Modern Football Data Analytics: How Clubs Scout Youth Talent Using Computer Vision', 'football-scouting-computer-vision',
- 'Exclusive interviews with Premier League data directors on skeletal tracking and off-ball movement metrics.',
- 'Traditional event data only captures actions on the ball—less than 2% of a match. Optical tracking systems running at 25 frames per second now evaluate spatial awareness and pressing intensity across 90 minutes...',
+(3, 7, 'Open-Source 3D Rendering Engines: Benchmarking Real-Time Path Tracing in Animation', 'open-source-3d-rendering-benchmarks-2026',
+ 'How modern GPU-accelerated open-source render pipelines cut frame generation times for independent animation studios.',
+ 'Rendering complex fur simulation, subsurface scattering, and dynamic foliage once required massive proprietary render farms. Using classic open-source 3D production benchmarks like Big Buck Bunny, graphics engineers demonstrate how modern denoising algorithms and compute shaders achieve cinema-grade frame rates on single workstations...',
  TRUE, 'PUBLISHED', '2026-11-19 08:00:00', '2026-11-18 21:30:00'),
 
 (3, 7, 'Designing Resilient Event-Driven Pipelines with Apache Kafka and Outbox Pattern', 'kafka-outbox-pattern-guide',
@@ -284,9 +314,7 @@ INSERT INTO articles (author_id, category_id, title, slug, summary, content, is_
  'Work in progress: evaluating phishing resistance, account recovery workflows, and compliance requirements...',
  TRUE, 'DRAFT', NULL, '2026-11-19 11:40:00');
 
--- ==========================================
--- 8. TAGS & ARTICLE_TAGS (M:N)
--- ==========================================
+-- 8. TAGS & ARTICLE_TAGS
 INSERT INTO tags (name) VALUES
 ('AI'), ('LLM'), ('Cybersecurity'), ('Zero-Trust'), ('Architecture'),
 ('Cloud'), ('Macroeconomics'), ('Venture Capital'), ('Semiconductors'),
@@ -294,7 +322,7 @@ INSERT INTO tags (name) VALUES
 ('Aerodynamics'), ('Space'), ('Cryptography');
 
 INSERT INTO article_tags (article_id, tag_id) VALUES
-(1, 1), (1, 2), (1, 6),
+(1, 1), (1, 6),
 (2, 3), (2, 4),
 (3, 5), (3, 6),
 (4, 7),
@@ -305,30 +333,26 @@ INSERT INTO article_tags (article_id, tag_id) VALUES
 (9, 3), (9, 15),
 (10, 1), (10, 2), (10, 5),
 (11, 7), (11, 9),
-(12, 1), (12, 11),
+(12, 1), (12, 5),
 (13, 5), (13, 6),
 (14, 3), (14, 15);
 
--- ==========================================
--- 9. ARTICLE MEDIA (1:N with articles)
--- ==========================================
+-- 9. ARTICLE MEDIA (Live Public CDN Images & Videos)
 INSERT INTO article_media (article_id, media_url, media_type, caption) VALUES
-(1, 'https://cdn.newsplatform.com/media/edge-slm-latency.png', 'IMAGE', 'Latency comparison between cloud API and local quantized models'),
-(1, 'https://cdn.newsplatform.com/media/edge-demo.mp4', 'VIDEO', 'Live inference benchmark on workstation hardware'),
-(2, 'https://cdn.newsplatform.com/media/cicd-attack-vector.png', 'IMAGE', 'Diagram of the compromised container build pipeline'),
-(3, 'https://cdn.newsplatform.com/media/modular-monolith-boundaries.png', 'IMAGE', 'Domain module isolation and shared kernel structure'),
-(4, 'https://cdn.newsplatform.com/media/g7-yield-curves.png', 'IMAGE', 'Projected 10-year sovereign bond yield trajectories'),
-(5, 'https://cdn.newsplatform.com/media/eu-ai-funding-chart.png', 'IMAGE', 'European AI infrastructure investment by quarter'),
-(6, 'https://cdn.newsplatform.com/media/ucl-pressing-heatmap.png', 'IMAGE', 'High-pressing recovery zones in midweek fixtures'),
-(7, 'https://cdn.newsplatform.com/media/f1-telemetry-trace.png', 'IMAGE', 'Throttle and speed trace comparison through Sector 2'),
-(8, 'https://cdn.newsplatform.com/media/lunar-relay-orbit.png', 'IMAGE', 'Elliptical frozen orbit coverage over the Lunar South Pole'),
-(9, 'https://cdn.newsplatform.com/media/pqc-hybrid-handshake.png', 'IMAGE', 'Hybrid TLS 1.3 key exchange sequence'),
-(10, 'https://cdn.newsplatform.com/media/coding-agents-scores.png', 'IMAGE', 'Pass@1 resolution rates across multi-file benchmark tasks'),
-(12, 'https://cdn.newsplatform.com/media/cv-pitch-tracking.mp4', 'VIDEO', 'Real-time 25fps player skeletal tracking overlay');
+(1, 'https://picsum.photos/id/1/800/450', 'IMAGE', 'Optical sensor workstation used for automated greenhouse telemetry'),
+(1, 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4', 'VIDEO', 'Time-lapse blooming sequence processed by the computer vision growth-tracking model'),
+(2, 'https://picsum.photos/id/60/800/450', 'IMAGE', 'Diagram of the compromised container build pipeline'),
+(3, 'https://picsum.photos/id/180/800/450', 'IMAGE', 'Domain module isolation and shared kernel structure'),
+(4, 'https://picsum.photos/id/1033/800/450', 'IMAGE', 'Projected 10-year sovereign bond yield trajectories'),
+(5, 'https://picsum.photos/id/366/800/450', 'IMAGE', 'European AI infrastructure investment by quarter'),
+(6, 'https://picsum.photos/id/1058/800/450', 'IMAGE', 'High-pressing recovery zones in midweek fixtures'),
+(7, 'https://picsum.photos/id/1071/800/450', 'IMAGE', 'Throttle and speed trace comparison through Sector 2'),
+(8, 'https://picsum.photos/id/903/800/450', 'IMAGE', 'Elliptical frozen orbit coverage over the Lunar South Pole'),
+(9, 'https://picsum.photos/id/2/800/450', 'IMAGE', 'Hybrid TLS 1.3 key exchange sequence'),
+(10, 'https://picsum.photos/id/0/800/450', 'IMAGE', 'Pass@1 resolution rates across multi-file benchmark tasks'),
+(12, 'https://www.w3schools.com/html/mov_bbb.mp4', 'VIDEO', 'Open-source 3D animation benchmark testing fur dynamics, foliage, and global illumination');
 
--- ==========================================
--- 10. ARTICLE INTERACTIONS (Likes, Bookmarks, Views)
--- ==========================================
+-- 10. ARTICLE INTERACTIONS
 INSERT INTO article_interactions (user_id, article_id, is_liked, is_bookmarked, viewed_at) VALUES
 (7, 1, TRUE, TRUE, '2026-11-10 11:20:00'),
 (7, 2, TRUE, TRUE, '2026-11-11 14:05:00'),
@@ -348,12 +372,10 @@ INSERT INTO article_interactions (user_id, article_id, is_liked, is_bookmarked, 
 (11, 6, TRUE, TRUE, '2026-11-15 20:40:00'),
 (11, 8, FALSE, FALSE, '2026-11-17 14:25:00');
 
--- ==========================================
 -- 11. COMMENTS
--- ==========================================
 INSERT INTO comments (article_id, user_id, content, created_at) VALUES
-(1, 7, 'We recently migrated our internal support classifier to a quantized 7B model and cut monthly API spend by 65%. Great write-up!', '2026-11-10 12:05:00'),
-(1, 10, 'Would love to see a follow-up comparing VRAM memory bandwidth bottlenecks on consumer GPUs.', '2026-11-12 21:30:00'),
+(1, 7, 'We tested a similar frame-diffing pipeline in our hydroponics lab — tracking petal opening speed accurately predicts nutrient uptake.', '2026-11-10 12:05:00'),
+(1, 10, 'Would love to see a follow-up on camera calibration under variable LED grow lights.', '2026-11-12 21:30:00'),
 (2, 7, 'The section on verifying image signatures in CI/CD before deployment is mandatory reading for every DevOps team.', '2026-11-11 15:10:00'),
 (3, 11, 'Totally agree. Splitting into 15 microservices with a team of four nearly killed our delivery speed last year.', '2026-11-13 10:15:00'),
 (4, 8, 'Clear breakdown of the 2s10s curve steepening. Looking forward to your Q1 equity sector rotation piece.', '2026-11-13 11:45:00'),
@@ -362,9 +384,7 @@ INSERT INTO comments (article_id, user_id, content, created_at) VALUES
 (8, 10, 'Laser optical links around the lunar south pole will be a game changer for Artemis surface telemetry.', '2026-11-16 19:25:00'),
 (10, 7, 'In our experience, agents handle unit test scaffolding well, but still need strict human review on complex SQL joins.', '2026-11-18 14:10:00');
 
--- ==========================================
--- 12. AUTHOR SUBSCRIPTIONS (Observer Pattern: Reader -> Journalist)
--- ==========================================
+-- 12. AUTHOR SUBSCRIPTIONS
 INSERT INTO author_subscriptions (subscriber_id, author_id, created_at) VALUES
 (7, 3, '2026-03-05 10:00:00'),
 (7, 4, '2026-03-10 14:20:00'),
@@ -375,14 +395,21 @@ INSERT INTO author_subscriptions (subscriber_id, author_id, created_at) VALUES
 (10, 3, '2026-06-01 12:30:00'),
 (11, 3, '2026-07-14 15:00:00');
 
--- ==========================================
--- 13. NOTIFICATIONS (Factory Method: EMAIL / PUSH)
--- ==========================================
+-- 13. NOTIFICATIONS
 INSERT INTO notifications (user_id, channel, title, message, is_read, created_at) VALUES
 (7, 'PUSH', 'New article from David Chen', 'David Chen published: Benchmarking Autonomous Coding Agents on Real-World Legacy Repositories', TRUE, '2026-11-18 11:01:00'),
 (7, 'EMAIL', 'Your Daily Technology Digest', 'Top stories in Artificial Intelligence and Cybersecurity curated for you.', FALSE, '2026-11-19 08:00:00'),
 (8, 'EMAIL', 'New Premium Report by Marcus Thorne', 'Marcus Thorne published: Central Bank Rate Cuts and Sovereign Bond Yields: Q4 Global Outlook', TRUE, '2026-11-13 07:46:00'),
 (8, 'PUSH', 'Market Update: Semiconductors', 'New article in Global Markets: Semiconductor Supply Chain Diversification', FALSE, '2026-11-18 16:21:00'),
-(9, 'PUSH', 'New article from Elena Rostova', 'Elena Rostova published: Inside Modern Football Data Analytics', FALSE, '2026-11-19 08:01:00'),
+(9, 'PUSH', 'New article from Elena Rostova', 'Elena Rostova published: Champions League Matchday Review', FALSE, '2026-11-15 08:31:00'),
 (10, 'EMAIL', 'Space Exploration Weekly Digest', 'Lunar South Pole Relay Satellites Enter Final Orbit Ahead of Rover Landing', TRUE, '2026-11-17 08:00:00'),
-(11, 'PUSH', 'Trending in Technology', 'How Edge-Deployed Small Language Models Are Reshaping Enterprise Apps is trending today.', TRUE, '2026-11-10 15:00:00');
+(11, 'PUSH', 'Trending in Technology', 'AI-Driven Botanical Time-Lapse Analysis is trending today.', TRUE, '2026-11-10 15:00:00');
+
+-- 14. ADVERTISEMENTS
+INSERT INTO advertisements (advertiser_name, title, banner_url, target_url, placement, category_id, impressions_count, clicks_count, is_active, start_date, end_date) VALUES
+('CloudScale GPU', 'Deploy Dedicated H200 Clusters in 60 Seconds — Get $200 Free Credit', 'https://picsum.photos/id/20/728/90', 'https://example.com/promo/cloudscale-gpu', 'TOP_BANNER', 1, 18420, 612, TRUE, '2026-11-01 00:00:00', '2026-12-31 23:59:59'),
+('ZeroTrust Shield', 'Automated SBOM & Container Vulnerability Scanning for DevSecOps Teams', 'https://picsum.photos/id/48/300/250', 'https://example.com/promo/zerotrust-shield', 'SIDEBAR', 6, 9350, 284, TRUE, '2026-11-05 00:00:00', '2026-12-15 23:59:59'),
+('FinPulse Terminal', 'Real-Time Sovereign Yield Curves & Institutional Macro Analytics', 'https://picsum.photos/id/160/600/200', 'https://example.com/promo/finpulse', 'IN_ARTICLE', 2, 12100, 405, TRUE, '2026-11-01 00:00:00', '2026-12-20 23:59:59'),
+('PitchVision Pro', 'Next-Gen Tactical Video Analysis Software for Football Academies', 'https://picsum.photos/id/1058/300/250', 'https://example.com/promo/pitchvision', 'SIDEBAR', 3, 7640, 198, TRUE, '2026-11-10 00:00:00', '2026-12-10 23:59:59'),
+('Nordic Roasters', 'Specialty Single-Origin Coffee Subscription — 25% Off Your First Box', 'https://picsum.photos/id/42/728/90', 'https://example.com/promo/nordic-coffee', 'TOP_BANNER', NULL, 25890, 930, TRUE, '2026-10-15 00:00:00', '2026-12-31 23:59:59'),
+('DevConf Europe 2026', 'Early Bird Tickets for Europe''s Largest Software Architecture Summit', 'https://picsum.photos/id/119/600/200', 'https://example.com/promo/devconf-2026', 'IN_ARTICLE', 7, 14200, 510, FALSE, '2026-09-01 00:00:00', '2026-10-31 23:59:59');
