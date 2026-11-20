@@ -101,3 +101,6 @@
 | **Observer** | Поведінковий | `IAuthorObserver` / `ArticlePublisher` | Реалізує механізм підписки читачів на улюблених авторів. Подія публікації нової статті автоматично сповіщає всіх підписаних слухачів. |
 | **Strategy** | Поведінковий | `IFeedStrategy` (`NewsFeedService`) | Забезпечує динамічну зміну алгоритму формування стрічки новин: за хронологією (`ChronologicalFeedStrategy`), за популярністю (`PopularFeedStrategy`) або персоналізовано (`PersonalizedFeedStrategy`). |
 | **State** | Поведінковий | `ISubscriptionState` (`Subscription`) | Інкапсулює поведінку підписки залежно від її поточного стану (`ActiveState`, `ExpiredState`, `CancelledState`), визначаючи права доступу до преміум-контенту без громіздких розгалужень `if/else`. |
+
+### ER-діаграма бази даних
+<img width="1283" height="1086" alt="news_platform_white" src="https://github.com/user-attachments/assets/b6fade34-e8f6-4e84-9c95-e2c08d62b7ee" />
