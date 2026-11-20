@@ -103,4 +103,4 @@
 | **State** | Поведінковий | `ISubscriptionState` (`Subscription`) | Інкапсулює поведінку підписки залежно від її поточного стану (`ActiveState`, `ExpiredState`, `CancelledState`), визначаючи права доступу до преміум-контенту без громіздких розгалужень `if/else`. |
 
 ### ER-діаграма бази даних
-<img width="1283" height="1086" alt="news_platform_white" src="https://github.com/user-attachments/assets/b6fade34-e8f6-4e84-9c95-e2c08d62b7ee" />
+<img width="1210" height="1135" alt="news_platform" src="https://github.com/user-attachments/assets/6c0474fb-2cf8-4855-b3be-77274d89aa4f" />
